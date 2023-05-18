@@ -10,9 +10,10 @@ clock = time.Clock()
 font = font.Font(None,50)
 canjump = 'true'
 final = True
-j = 0
+payse_window = False
 fps = 60
 coins = 0
+jump_schetchik = 0
 coins_font = font.render(str(coins) ,True,(0,0,0))
 game = True
 spikes = sprite.Group()
@@ -38,24 +39,24 @@ class Player(Sprites):
         if keys[K_SPACE] and canjump == 'true':
             canjump = 'false'
             self.first_y = self.rect.y
-            global j
-            self.j = j
+            self.jymp = True
+            self.jjump = False
         if canjump == 'false':
             self.jump()
     def jump(self):
-        global canjump  
-        if self.j <= self.jump_stranght*0.9:
+        global canjump 
+        global jump_schetchik 
+        if self.first_y-self.jump_stranght <= self.rect.y and self.jymp:
             self.rect.y -= 5
-            self.j += 1
-        if self.j > self.jump_stranght*0.9 and self.j <= self.jump_stranght*1.1:
-            self.j += 1
-        if self.j > self.jump_stranght*1.1:
-            self.rect.y += 5
-            self.j += 1
-        if self.j > self.jump_stranght*2.05:
-            self.rect.y = self.first_y
+        if self.first_y-self.jump_stranght >= self.rect.y or self.jjump:
+            self.jymp = False
+            self.jjump = True
+            jump_schetchik += 1
+            if jump_schetchik >= 20 and self.first_y != self.rect.y:
+                self.rect.y += 5
+        if self.first_y == self.rect.y:
             canjump = 'true'
-            self.j = 0
+            jump_schetchik = 0
 class Animate_bg(Sprites):
     def __init__(self,sprite,x,y,w,h,speed):
         super().__init__(sprite,x,y,w,h)
@@ -89,18 +90,26 @@ class Coins(Sprites):
     def update(self):
         if sprite.collide_rect(self,player):
             self.rect.x = 1000
-            collect_coin(100)
+            collect_coin(1)
         if self.rect.x > -100:
             self.rect.x -= self.speed
         else:
             self.rect.x = 1000
+        window.blit(self.image,(self.rect.x,self.rect.y))
+class Payse(Sprites):
+    def __init__(self,sprite,x,y,w,h):
+        super().__init__(sprite,x,y,w,h)
+        self.image = transform.scale(image.load(sprite),(self.w,self.h))
+    def update(self):
         window.blit(self.image,(self.rect.x,self.rect.y))
 def collect_coin(takes_coins):
     global coins
     global coins_font
     coins += takes_coins
     coins_font = font.render(str(coins) ,True,(0,0,0))
-player = Player('player.png',100,500,50,100,50)
+player = Player('player.png',100,500,200,100,50)
+payse = Sprites('payse.png',730,10,50,50)
+start_button = Payse('start.png',0,0,700,700)
 rock_bg1 = Animate_bg('gora.png',0,286,820,164,1)   
 rock_bg2 = Animate_bg('gora.png',820,286,820,164,1)
 flour1 = Animate_bg('flour.png',0,450,300,150,3)
@@ -114,6 +123,16 @@ while game:
     for i in event.get():
         if i.type == QUIT:
             game = False
+        if i.type == MOUSEBUTTONUP:
+            if payse.rect.collidepoint(i.pos):
+                final = False
+                payse_window = True
+            if start_button.rect.collidepoint(i.pos):
+                final = True
+                payse_window = False
+    if payse_window:
+        start_button.update()
+        print('a')
     if final:
         window.blit(bg,(0,0))
         window.blit(coins_font,(80,30))
@@ -129,5 +148,6 @@ while game:
         spikes.update()
         spikes.draw(window)
         coin.update()
+        payse.update()
         clock.tick(fps)
         display.update()
