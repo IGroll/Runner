@@ -3,14 +3,13 @@ from random import randint
 font.init()
 mixer.init()
 window = display.set_mode((800,600))
-bg = transform.scale(image.load('bg.png'),(800,600))
-bg_coin = transform.scale(image.load('coin.png'),(40,50))
 display.set_caption('Ето ранир')
 clock = time.Clock()
 font = font.Font(None,50)
 canjump = 'true'
-final = True
+final = False
 payse_window = False
+lobby = True
 fps = 60
 coins = 0
 jump_schetchik = 0
@@ -107,9 +106,15 @@ def collect_coin(takes_coins):
     global coins_font
     coins += takes_coins
     coins_font = font.render(str(coins) ,True,(0,0,0))
+
+# геймплей
+bg_coin = transform.scale(image.load('coin.png'),(40,50))
+bg = transform.scale(image.load('bg.png'),(800,600))
+
 player = Player('player.png',100,500,200,100,50)
 payse = Sprites('payse.png',730,10,50,50)
-start_button = Payse('start.png',0,0,700,700)
+start_button = Payse('start.png',330,220,150,150)
+stop_menu = Sprites('stop_menu.png',100,150,600,300)
 rock_bg1 = Animate_bg('gora.png',0,286,820,164,1)   
 rock_bg2 = Animate_bg('gora.png',820,286,820,164,1)
 flour1 = Animate_bg('flour.png',0,450,300,150,3)
@@ -119,6 +124,10 @@ flour4 = Animate_bg('flour.png',900,450,300,150,3)
 spike1 = Spikes('spike.png',800,460,3,100,90)
 spikes.add(spike1)
 coin = Coins('coin.png',1000,460,3,50,70)
+
+# лобби
+lobby_bg = Sprites('lobby_bg.png',0,0,800,600)
+start_button2 = Sprites('start.png',350,250,120,120)
 while game:
     for i in event.get():
         if i.type == QUIT:
@@ -130,9 +139,15 @@ while game:
             if start_button.rect.collidepoint(i.pos):
                 final = True
                 payse_window = False
+            if start_button2.rect.collidepoint(i.pos):
+                final = True
+                lobby = False   
     if payse_window:
+        stop_menu.update()
         start_button.update()
-        print('a')
+    if lobby:
+        lobby_bg.update()
+        start_button2.update()
     if final:
         window.blit(bg,(0,0))
         window.blit(coins_font,(80,30))
@@ -149,5 +164,5 @@ while game:
         spikes.draw(window)
         coin.update()
         payse.update()
-        clock.tick(fps)
-        display.update()
+    clock.tick(fps)
+    display.update()
