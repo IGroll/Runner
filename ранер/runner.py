@@ -1,5 +1,6 @@
 from pygame import *
 from random import randint
+import json
 font.init()
 mixer.init()
 window = display.set_mode((800,600))
@@ -11,11 +12,14 @@ final = False
 payse_window = False
 lobby = True
 fps = 60
-coins = 0
+with open('stata.json','r',encoding='utf-8') as file:
+    data = json.load(file)
+    coins_int = data['coins']
 jump_schetchik = 0
-coins_font = font.render(str(coins) ,True,(0,0,0))
+coins_font = font.render(str(coins_int) ,True,(0,0,0))
 game = True
 spikes = sprite.Group()
+coins = sprite.Group()
 class Sprites(sprite.Sprite):
     def __init__(self,sprite,x,y,w,h):
         super().__init__()
@@ -75,7 +79,9 @@ class Spikes(Sprites):
     def update(self):
         if sprite.spritecollide(player,spikes,False,collided=sprite.collide_rect_ratio(.78)):
             global final
+            global payse_window
             final = False
+            payse_window = True
         if self.rect.x > -100:
             self.rect.x -= self.speed
         else:
@@ -102,19 +108,36 @@ class Payse(Sprites):
     def update(self):
         window.blit(self.image,(self.rect.x,self.rect.y))
 def collect_coin(takes_coins):
-    global coins
+    global coins_int
     global coins_font
-    coins += takes_coins
-    coins_font = font.render(str(coins) ,True,(0,0,0))
-
+    coins_int += takes_coins
+    coins_font = font.render(str(coins_int) ,True,(0,0,0))
+def make_variant(variant):
+    for i in variant:
+        if i == variant[0]:
+            x = 60
+        if i == variant[1]:
+            x = 160
+        if i == variant[2]:
+            x = 260
+        if i == variant[3]:
+            x = 360  
+        if i == variant[4]:
+            x = 460
+        if i == 'coin':
+            coin = Coins('coin.png',1000,x,3,50,70)
+    coins.add(coin)
 # геймплей
 bg_coin = transform.scale(image.load('coin.png'),(40,50))
 bg = transform.scale(image.load('bg.png'),(800,600))
 
 player = Player('player.png',100,500,200,100,50)
+
 payse = Sprites('payse.png',730,10,50,50)
-start_button = Payse('start.png',330,220,150,150)
+start_button = Payse('start.png',340,220,150,150)
 stop_menu = Sprites('stop_menu.png',100,150,600,300)
+go_home = Sprites('go_home.png',140,220,150,150)
+
 rock_bg1 = Animate_bg('gora.png',0,286,820,164,1)   
 rock_bg2 = Animate_bg('gora.png',820,286,820,164,1)
 flour1 = Animate_bg('flour.png',0,450,300,150,3)
@@ -123,15 +146,26 @@ flour3 = Animate_bg('flour.png',600,450,300,150,3)
 flour4 = Animate_bg('flour.png',900,450,300,150,3)
 spike1 = Spikes('spike.png',800,460,3,100,90)
 spikes.add(spike1)
-coin = Coins('coin.png',1000,460,3,50,70)
-
+make_variant(data['variant_1'][0])
+make_variant(data['variant_1'][1])
+make_variant(data['variant_1'][2])
 # лобби
 lobby_bg = Sprites('lobby_bg.png',0,0,800,600)
 start_button2 = Sprites('start.png',350,250,120,120)
+
 while game:
     for i in event.get():
         if i.type == QUIT:
             game = False
+            del data['coins']
+            data['coins'] = coins_int
+            #data = {'coins':coins_int,
+                                #'variant_1':[[None,None,None,None,'coin'],
+                                            #[None,None,None,'coin',None],
+                                            #[None,None,None,'coin',None]
+                                            #]}
+            with open('stata.json','w',encoding='utf-8') as file:
+                json.dump(data,file)
         if i.type == MOUSEBUTTONUP:
             if payse.rect.collidepoint(i.pos):
                 final = False
@@ -142,9 +176,14 @@ while game:
             if start_button2.rect.collidepoint(i.pos):
                 final = True
                 lobby = False   
+            if go_home.rect.collidepoint(i.pos):
+                payse_window = False
+                final = False
+                lobby = True
     if payse_window:
         stop_menu.update()
         start_button.update()
+        go_home.update()
     if lobby:
         lobby_bg.update()
         start_button2.update()
@@ -162,7 +201,8 @@ while game:
         player.move()
         spikes.update()
         spikes.draw(window)
-        coin.update()
+        coins.update()
+        coins.draw(window)
         payse.update()
     clock.tick(fps)
     display.update()
