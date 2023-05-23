@@ -85,7 +85,7 @@ class Spikes(Sprites):
         if self.rect.x > -100:
             self.rect.x -= self.speed
         else:
-            self.rect.x = 1000
+            self.kill()
         window.blit(self.image,(self.rect.x,self.rect.y))
 class Coins(Sprites):
     def __init__(self,sprite,x,y,speed,w,h):
@@ -94,7 +94,7 @@ class Coins(Sprites):
         self.speed = speed
     def update(self):
         if sprite.collide_rect(self,player):
-            self.rect.x = 1000
+            self.kill()
             collect_coin(1)
         if self.rect.x > -100:
             self.rect.x -= self.speed
@@ -113,20 +113,36 @@ def collect_coin(takes_coins):
     coins_int += takes_coins
     coins_font = font.render(str(coins_int) ,True,(0,0,0))
 def make_variant(variant):
-    for i in variant:
-        if i == variant[0]:
-            x = 60
-        if i == variant[1]:
-            x = 160
-        if i == variant[2]:
-            x = 260
-        if i == variant[3]:
-            x = 360  
-        if i == variant[4]:
-            x = 460
-        if i == 'coin':
-            coin = Coins('coin.png',1000,x,3,50,70)
-    coins.add(coin)
+    for a in range(len(variant)):
+        for i in variant[a]:
+            if i == variant[a][0]:
+                x = 1000
+            if i == variant[a][1]:
+                x = 1100
+            if i == variant[a][2]:
+                x = 1200
+            if i == variant[a][3]:
+                x = 1300  
+            if i == variant[a][4]:
+                x = 1400
+            if variant[a] == variant[0]:
+                y = 60
+            if variant[a] == variant[1]:
+                y = 160
+            if variant[a] == variant[2]:
+                y = 260
+            if variant[a] == variant[3]:
+                y = 360
+            if variant[a] == variant[4]:
+                y = 460
+            if i == 'coin':
+                print(x)
+                coin = Coins('coin.png',x,y,3,50,70)
+                coins.add(coin)
+            if i == 'spike':
+                spike = Spikes('spike.png',x,y,3,100,90)
+                spikes.add(spike)
+    print(coins)
 # геймплей
 bg_coin = transform.scale(image.load('coin.png'),(40,50))
 bg = transform.scale(image.load('bg.png'),(800,600))
@@ -144,11 +160,9 @@ flour1 = Animate_bg('flour.png',0,450,300,150,3)
 flour2 = Animate_bg('flour.png',300,450,300,150,3)
 flour3 = Animate_bg('flour.png',600,450,300,150,3)
 flour4 = Animate_bg('flour.png',900,450,300,150,3)
-spike1 = Spikes('spike.png',800,460,3,100,90)
-spikes.add(spike1)
-make_variant(data['variant_1'][0])
-make_variant(data['variant_1'][1])
-make_variant(data['variant_1'][2])
+
+make_variant(data['variant_1'])
+
 # лобби
 lobby_bg = Sprites('lobby_bg.png',0,0,800,600)
 start_button2 = Sprites('start.png',350,250,120,120)
@@ -159,11 +173,13 @@ while game:
             game = False
             del data['coins']
             data['coins'] = coins_int
-            #data = {'coins':coins_int,
-                                #'variant_1':[[None,None,None,None,'coin'],
-                                            #[None,None,None,'coin',None],
-                                            #[None,None,None,'coin',None]
-                                            #]}
+            data = {'coins':coins_int,
+                                'variant_1':[[None,None,None,None,'coin'],
+                                            [None,None,None,'coin',None],
+                                            [None,None,'coin',None,None],
+                                            [None,'coin',None,None,None],
+                                            ['coin',None,None,None,'coin']
+                                            ]}
             with open('stata.json','w',encoding='utf-8') as file:
                 json.dump(data,file)
         if i.type == MOUSEBUTTONUP:
