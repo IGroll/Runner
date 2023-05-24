@@ -12,6 +12,7 @@ final = False
 payse_window = False
 lobby = True
 fps = 60
+variant_x = 0
 with open('stata.json','r',encoding='utf-8') as file:
     data = json.load(file)
     coins_int = data['coins']
@@ -99,7 +100,7 @@ class Coins(Sprites):
         if self.rect.x > -100:
             self.rect.x -= self.speed
         else:
-            self.rect.x = 1000
+            self.kill()
         window.blit(self.image,(self.rect.x,self.rect.y))
 class Payse(Sprites):
     def __init__(self,sprite,x,y,w,h):
@@ -112,18 +113,18 @@ def collect_coin(takes_coins):
     global coins_font
     coins_int += takes_coins
     coins_font = font.render(str(coins_int) ,True,(0,0,0))
-def make_variant(variant):
+def make_variant(variant,variant_x):
     for a in range(len(variant)):
-        for i in variant[a]:
-            if i == variant[a][0]:
+        for i in range(len(variant[a])):
+            if variant[a][i] == variant[a][0]:
                 x = 1000
-            if i == variant[a][1]:
+            if variant[a][i] == variant[a][1]:
                 x = 1100
-            if i == variant[a][2]:
+            if variant[a][i] == variant[a][2]:
                 x = 1200
-            if i == variant[a][3]:
+            if variant[a][i] == variant[a][3]:
                 x = 1300  
-            if i == variant[a][4]:
+            if variant[a][i] == variant[a][4]:
                 x = 1400
             if variant[a] == variant[0]:
                 y = 60
@@ -135,14 +136,19 @@ def make_variant(variant):
                 y = 360
             if variant[a] == variant[4]:
                 y = 460
-            if i == 'coin':
-                print(x)
-                coin = Coins('coin.png',x,y,3,50,70)
+            if variant[a][i] == 'coin':
+                coin = Coins('coin.png',x+variant_x,y,3,50,70)
                 coins.add(coin)
-            if i == 'spike':
-                spike = Spikes('spike.png',x,y,3,100,90)
+            if variant[a][i] == 'coin2':
+                coin = Coins('coin.png',x+variant_x,y,3,50,70)
+                coins.add(coin)
+            if variant[a][i] == 'coin3':
+                coin = Coins('coin.png',x+variant_x,y,3,50,70)
+                coins.add(coin)
+            if variant[a][i] == 'spike':
+                x-=25
+                spike = Spikes('spike.png',x+variant_x,y,3,100,90)
                 spikes.add(spike)
-    print(coins)
 # геймплей
 bg_coin = transform.scale(image.load('coin.png'),(40,50))
 bg = transform.scale(image.load('bg.png'),(800,600))
@@ -161,8 +167,9 @@ flour2 = Animate_bg('flour.png',300,450,300,150,3)
 flour3 = Animate_bg('flour.png',600,450,300,150,3)
 flour4 = Animate_bg('flour.png',900,450,300,150,3)
 
-make_variant(data['variant_1'])
-
+for e in range(0,2):
+    make_variant(data['variants'][e],variant_x)
+    variant_x += 1000
 # лобби
 lobby_bg = Sprites('lobby_bg.png',0,0,800,600)
 start_button2 = Sprites('start.png',350,250,120,120)
@@ -173,12 +180,18 @@ while game:
             game = False
             del data['coins']
             data['coins'] = coins_int
-            data = {'coins':coins_int,
-                                'variant_1':[[None,None,None,None,'coin'],
-                                            [None,None,None,'coin',None],
+            data = {'coins':coins_int,'variants':
+                                            [[[None,None,None,None,None],
+                                            [None,None,None,None,None],
                                             [None,None,'coin',None,None],
-                                            [None,'coin',None,None,None],
-                                            ['coin',None,None,None,'coin']
+                                            [None,'coin',None,'coin2',None],
+                                            ['coin',None,'spike',None,'coin2']]
+                                            ,
+                                            [[None,None,None,None,None],
+                                            [None,None,None,None,None],
+                                            [None,None,None,None,None],
+                                            [None,None,None,None,None],
+                                            ['coin','coin2','coin3','spike',None]]
                                             ]}
             with open('stata.json','w',encoding='utf-8') as file:
                 json.dump(data,file)
