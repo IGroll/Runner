@@ -21,6 +21,7 @@ coins_font = font.render(str(coins_int) ,True,(0,0,0))
 game = True
 spikes = sprite.Group()
 coins = sprite.Group()
+
 class Sprites(sprite.Sprite):
     def __init__(self,sprite,x,y,w,h):
         super().__init__()
@@ -32,6 +33,7 @@ class Sprites(sprite.Sprite):
         self.rect.y = y 
     def update(self):
         window.blit(self.image,(self.rect.x,self.rect.y))
+
 class Player(Sprites):
     def __init__(self,sprite,x,y,jump_stranght,w,h):
         super().__init__(sprite,x,y,w,h)
@@ -61,6 +63,7 @@ class Player(Sprites):
         if self.first_y == self.rect.y:
             canjump = 'true'
             jump_schetchik = 0
+
 class Animate_bg(Sprites):
     def __init__(self,sprite,x,y,w,h,speed):
         super().__init__(sprite,x,y,w,h)
@@ -72,6 +75,7 @@ class Animate_bg(Sprites):
         if self.rect.x <= -self.weight:
             self.rect.x = 800
         window.blit(self.image,(self.rect.x,self.rect.y))
+
 class Spikes(Sprites):
     def __init__(self,sprite,x,y,speed,w,h):
         super().__init__(sprite,x,y,w,h)
@@ -88,6 +92,7 @@ class Spikes(Sprites):
         else:
             self.kill()
         window.blit(self.image,(self.rect.x,self.rect.y))
+
 class Coins(Sprites):
     def __init__(self,sprite,x,y,speed,w,h):
         super().__init__(sprite,x,y,w,h)
@@ -102,6 +107,7 @@ class Coins(Sprites):
         else:
             self.kill()
         window.blit(self.image,(self.rect.x,self.rect.y))
+
 class Payse(Sprites):
     def __init__(self,sprite,x,y,w,h):
         super().__init__(sprite,x,y,w,h)
@@ -149,6 +155,7 @@ def make_variant(variant,variant_x):
                 x-=25
                 spike = Spikes('spike.png',x+variant_x,y,3,100,90)
                 spikes.add(spike)
+
 # геймплей
 bg_coin = transform.scale(image.load('coin.png'),(40,50))
 bg = transform.scale(image.load('bg.png'),(800,600))
@@ -167,10 +174,7 @@ flour2 = Animate_bg('flour.png',300,450,300,150,3)
 flour3 = Animate_bg('flour.png',600,450,300,150,3)
 flour4 = Animate_bg('flour.png',900,450,300,150,3)
 
-for e in range(0,2):
-    make_variant(data['variants'][e],variant_x)
-    variant_x += 1000
-# лобби
+#               лобби
 lobby_bg = Sprites('lobby_bg.png',0,0,800,600)
 start_button2 = Sprites('start.png',350,250,120,120)
 
@@ -186,12 +190,18 @@ while game:
                                             [None,None,'coin',None,None],
                                             [None,'coin',None,'coin2',None],
                                             ['coin',None,'spike',None,'coin2']]
-                                            ,
+                                        ,
                                             [[None,None,None,None,None],
                                             [None,None,None,None,None],
                                             [None,None,None,None,None],
                                             [None,None,None,None,None],
                                             ['coin','coin2','coin3','spike',None]]
+                                        ,
+                                            [[None,None,None,None,None],
+                                            [None,None,None,None,None],
+                                            [None,None,None,None,None],
+                                            [None,'coin',None,None,None],
+                                            ['coin','spike','coin2',None,None]]
                                             ]}
             with open('stata.json','w',encoding='utf-8') as file:
                 json.dump(data,file)
@@ -200,8 +210,16 @@ while game:
                 final = False
                 payse_window = True
             if start_button.rect.collidepoint(i.pos):
+                spikes.empty()
+                coins.empty()
                 final = True
                 payse_window = False
+                #       отрисовка
+                for e in range(0,3):
+                    e = randint(0,2)
+                    make_variant(data['variants'][e],variant_x)
+                    variant_x += 500
+                variant_x = 0
             if start_button2.rect.collidepoint(i.pos):
                 final = True
                 lobby = False   
